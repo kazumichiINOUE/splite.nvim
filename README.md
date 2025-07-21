@@ -1,4 +1,4 @@
-# literate_mode_on_nvim
+# literate_mode.nvim
 
 Neovim plugin for Literate Programming with dynamic syntax highlighting modes.
 
@@ -14,7 +14,7 @@ Neovim plugin for Literate Programming with dynamic syntax highlighting modes.
 
 ```lua
 {
-  "your-username/literate_mode.nvim",
+  "kazumichiINOUE/literate_mode.nvim",
   config = function()
     require("literate_mode").setup()
   end
@@ -25,7 +25,7 @@ Neovim plugin for Literate Programming with dynamic syntax highlighting modes.
 
 ```lua
 use {
-  "your-username/literate_mode.nvim",
+  "kazumichiINOUE/literate_mode.nvim",
   config = function()
     require("literate_mode").setup()
   end
