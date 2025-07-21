@@ -1,4 +1,4 @@
-# literate_mode.nvim
+# literate_mode_on_nvim
 
 Neovim plugin for Literate Programming with dynamic syntax highlighting modes.
 
