@@ -17,3 +17,7 @@ end, {
 vim.api.nvim_create_user_command('LiterateToggle', function()
   require('literate_mode').toggle()
 end, { desc = 'Toggle literate mode' })
+
+vim.api.nvim_create_user_command('LiterateDebug', function()
+  require('literate_mode').debug_highlight()
+end, { desc = 'Debug highlight under cursor' })
