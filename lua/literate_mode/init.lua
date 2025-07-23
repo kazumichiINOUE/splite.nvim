@@ -211,13 +211,19 @@ enable_split_view = function()
   -- 中央ウィンドウにフォーカス
   vim.api.nvim_set_current_win(windows[2])
   
-  -- 左右ペインにnowrapを設定
+  -- 左右ペインにnowrapと絶対行番号を設定
   vim.api.nvim_set_current_win(windows[1])
   vim.wo.wrap = false
+  vim.wo.number = true
+  vim.wo.relativenumber = false
   vim.api.nvim_set_current_win(windows[3])
   vim.wo.wrap = false
+  vim.wo.number = true
+  vim.wo.relativenumber = false
   vim.api.nvim_set_current_win(windows[2])
   vim.wo.wrap = false
+  vim.wo.number = true
+  vim.wo.relativenumber = false
   
   -- スクロール同期のautocmd設定
   vim.api.nvim_create_autocmd({"CursorMoved", "CursorMovedI"}, {
@@ -235,8 +241,16 @@ end
 
 -- Private: 通常表示復帰
 disable_split_view = function()
+  -- 行番号設定を保存（分割前の設定に戻す）
+  local original_number = vim.wo.number
+  local original_relativenumber = vim.wo.relativenumber
+  
   -- 分割されたウィンドウを閉じる
   vim.cmd("only")
+  
+  -- 行番号設定を復元
+  vim.wo.number = original_number
+  vim.wo.relativenumber = original_relativenumber
 end
 
 -- Private: スクロール同期処理
@@ -289,6 +303,23 @@ sync_split_scroll = function()
       -- 元バッファのファイルタイプとシンタックス設定をコピー
       local original_ft = vim.api.nvim_buf_get_option(original_buf, 'filetype')
       vim.api.nvim_buf_set_option(left_buf, 'filetype', original_ft)
+      
+      -- カスタム行番号表示を設定
+      vim.wo.number = false
+      vim.wo.relativenumber = false
+      vim.wo.signcolumn = "yes:2"
+      
+      -- サイン定義（先に定義）
+      for i = left_top, center_top - 1 do
+        vim.fn.sign_define("LineNum" .. i, {text = tostring(i), texthl = "LineNr"})
+      end
+      
+      -- 実際のファイル行番号を表示するためのsign配置
+      for i = 1, lines_to_show do
+        local actual_line_num = left_top + i - 1
+        local sign_line = win_height - lines_to_show + i
+        vim.fn.sign_place(0, "left_line_nums", "LineNum" .. actual_line_num, left_buf, {lnum = sign_line})
+      end
       
       
       -- 最下部にカーソル移動
