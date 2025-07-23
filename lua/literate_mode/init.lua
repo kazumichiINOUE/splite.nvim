@@ -172,17 +172,6 @@ disable_literate_mode = function ()
   local cursor_pos = vim.fn.getcurpos()
   local view = vim.fn.winsaveview()
   
-  -- split viewの場合，左右ペインのハイライトをリセット
-  if M.split_view then
-    local windows = vim.api.nvim_tabpage_list_wins(0)
-    if #windows == 3 then
-      vim.api.nvim_set_current_win(windows[1])
-      vim.wo.winhl = ""
-      vim.api.nvim_set_current_win(windows[3])
-      vim.wo.winhl = ""
-      vim.api.nvim_set_current_win(windows[2])
-    end
-  end
   
   -- 通常モード：元のカラースキームに戻す  
   vim.cmd("TSEnable highlight")
@@ -222,17 +211,13 @@ enable_split_view = function()
   -- 中央ウィンドウにフォーカス
   vim.api.nvim_set_current_win(windows[2])
   
-  -- 左右ペインの色を暗くする
+  -- 左右ペインにnowrapを設定
   vim.api.nvim_set_current_win(windows[1])
-  vim.wo.winhl = "Normal:NormalSide"
+  vim.wo.wrap = false
   vim.api.nvim_set_current_win(windows[3])
-  vim.wo.winhl = "Normal:NormalSide"
+  vim.wo.wrap = false
   vim.api.nvim_set_current_win(windows[2])
-  
-  -- カスタムハイライトグループを定義（背景同一，文字色のみ暗く）
-  local normal_bg = vim.fn.synIDattr(vim.fn.hlID("Normal"), "bg")
-  if normal_bg == "" then normal_bg = "NONE" end
-  vim.cmd("highlight NormalSide guibg=" .. normal_bg .. " guifg=#707070")
+  vim.wo.wrap = false
   
   -- スクロール同期のautocmd設定
   vim.api.nvim_create_autocmd({"CursorMoved", "CursorMovedI"}, {
@@ -252,8 +237,6 @@ end
 disable_split_view = function()
   -- 分割されたウィンドウを閉じる
   vim.cmd("only")
-  -- ハイライトをリセット
-  vim.wo.winhl = ""
 end
 
 -- Private: スクロール同期処理
@@ -277,11 +260,52 @@ sync_split_scroll = function()
   
   if left_top < center_top then
     -- 表示すべき内容がある場合
-    local current_buf = vim.api.nvim_win_get_buf(center_win)
-    vim.api.nvim_win_set_buf(left_win, current_buf)
-    -- 左ペインの表示位置を計算
-    vim.fn.cursor(left_top, 1)
-    vim.cmd("normal! zt")
+    local original_buf = vim.api.nvim_win_get_buf(center_win)
+    local lines_to_show = center_top - left_top
+    
+    if lines_to_show < win_height then
+      -- 専用バッファを作成して必要な行のみコピー
+      local left_buf = vim.api.nvim_create_buf(false, true)
+      vim.api.nvim_buf_set_option(left_buf, 'buftype', 'nofile')
+      vim.api.nvim_buf_set_option(left_buf, 'bufhidden', 'wipe')
+      
+      -- 元バッファから必要な行を取得
+      local lines = vim.api.nvim_buf_get_lines(original_buf, left_top - 1, center_top - 1, false)
+      
+      -- 空行を追加して下部に寄せる
+      local empty_lines = {}
+      for i = 1, win_height - lines_to_show do
+        table.insert(empty_lines, "")
+      end
+      
+      -- 空行 + 実際の内容を設定
+      for _, line in ipairs(lines) do
+        table.insert(empty_lines, line)
+      end
+      
+      vim.api.nvim_buf_set_lines(left_buf, 0, -1, false, empty_lines)
+      vim.api.nvim_win_set_buf(left_win, left_buf)
+      
+      -- 元バッファのファイルタイプとシンタックス設定をコピー
+      local original_ft = vim.api.nvim_buf_get_option(original_buf, 'filetype')
+      vim.api.nvim_buf_set_option(left_buf, 'filetype', original_ft)
+      
+      
+      -- 最下部にカーソル移動
+      vim.fn.cursor(#empty_lines, 1)
+    else
+      -- 通常の表示（元バッファを使用）
+      vim.api.nvim_win_set_buf(left_win, original_buf)
+      vim.fn.cursor(left_top, 1)
+      vim.cmd("normal! zt")
+    end
+    
+    -- TODO: literate mode シンタックス適用（一時無効化）
+    -- if M.mode then
+    --   vim.api.nvim_set_current_win(center_win)
+    --   local original_ft = vim.api.nvim_buf_get_option(original_buf, 'filetype')
+    --   setup_literate_syntax(original_ft)
+    -- end
   else
     -- 表示すべき内容がない場合（ファイル先頭）
     local scratch_buf = vim.api.nvim_create_buf(false, true)
