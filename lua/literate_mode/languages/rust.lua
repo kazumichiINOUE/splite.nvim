@@ -82,6 +82,15 @@ return {
     'highlight! link @variable.builtin Normal',
     'highlight! link @parameter Normal',
     'highlight! link @field Normal',
-    'highlight! link @property Normal'
+    'highlight! link @property Normal',
+    'highlight! link @function Normal',
+    'highlight! link @function.builtin Normal',
+    'highlight! link @constructor Normal',
+    'highlight! link @method Normal',
+    'highlight! link DiagnosticUnnecessary Normal',
+    'highlight! link DiagnosticUnderlineHint Normal',
+    'highlight! link NvimTreeSpecialFile Normal',
+    'highlight! link NvimTreeFolderName Normal',
+    'highlight! link NvimTreeRootFolder Normal'
   }
 }

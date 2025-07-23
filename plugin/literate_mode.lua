@@ -13,6 +13,14 @@ end, {
   silent = true 
 })
 
+vim.keymap.set('n', '<leader>lv', function()
+  require('literate_mode').toggle_split_view()
+end, { 
+  desc = 'Toggle split view',
+  noremap = true,
+  silent = true 
+})
+
 -- コマンドの定義
 vim.api.nvim_create_user_command('LiterateToggle', function()
   require('literate_mode').toggle()
@@ -21,3 +29,7 @@ end, { desc = 'Toggle literate mode' })
 vim.api.nvim_create_user_command('LiterateDebug', function()
   require('literate_mode').debug_highlight()
 end, { desc = 'Debug highlight under cursor' })
+
+vim.api.nvim_create_user_command('LiterateSplit', function()
+  require('literate_mode').toggle_split_view()
+end, { desc = 'Toggle split view' })

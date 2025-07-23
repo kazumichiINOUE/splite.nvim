@@ -1,7 +1,11 @@
+-- vim global is provided by Neovim
+---@diagnostic disable: undefined-global
+
 local M = {}
 
 -- プラグインの状態管理
 M.mode = false
+M.split_view = false
 
 -- 言語設定キャッシュ
 local language_configs = {}
@@ -11,6 +15,9 @@ local load_language_config
 local setup_literate_syntax
 local enable_literate_mode
 local disable_literate_mode
+local enable_split_view
+local disable_split_view
+local sync_split_scroll
 
 -- Private: 言語設定の動的読み込み
 load_language_config = function(filetype)
@@ -66,6 +73,12 @@ end
   
 -- Public: モード切り替え
 function M.toggle()
+  -- ファイラーでは無効化
+  if vim.bo.filetype == 'NvimTree' then
+    print("Literate mode: Not available in file explorer")
+    return
+  end
+  
   M.mode = not M.mode
   if M.mode then
     enable_literate_mode()
@@ -88,6 +101,18 @@ function M.debug_highlight()
   print("Cursor position: " .. line .. "," .. col)
   print("Syntax group: " .. syn_name)  
   print("Highlight group: " .. trans_name)
+end
+
+-- Public: 3分割表示切り替え
+function M.toggle_split_view()
+  M.split_view = not M.split_view
+  if M.split_view then
+    enable_split_view()
+    print("Split View Mode")
+  else
+    disable_split_view()
+    print("Normal View Mode")
+  end
 end
 
 -- Public: プラグインのセットアップ関数
@@ -147,6 +172,18 @@ disable_literate_mode = function ()
   local cursor_pos = vim.fn.getcurpos()
   local view = vim.fn.winsaveview()
   
+  -- split viewの場合，左右ペインのハイライトをリセット
+  if M.split_view then
+    local windows = vim.api.nvim_tabpage_list_wins(0)
+    if #windows == 3 then
+      vim.api.nvim_set_current_win(windows[1])
+      vim.wo.winhl = ""
+      vim.api.nvim_set_current_win(windows[3])
+      vim.wo.winhl = ""
+      vim.api.nvim_set_current_win(windows[2])
+    end
+  end
+  
   -- 通常モード：元のカラースキームに戻す  
   vim.cmd("TSEnable highlight")
   vim.cmd([[
@@ -156,11 +193,111 @@ disable_literate_mode = function ()
     colorscheme tokyonight
   ]])
   
+  -- nvim-treeのハイライトを強制更新
+  if pcall(require, "nvim-tree") then
+    vim.cmd("NvimTreeRefresh")
+  end
+  
   vim.cmd("edit")
   
   -- カーソル位置とスクロール位置を復元
   vim.fn.setpos('.', cursor_pos)
   vim.fn.winrestview(view)
+end
+
+-- Private: 3分割表示有効化
+enable_split_view = function()
+  local current_buf = vim.api.nvim_get_current_buf()
+  
+  -- 3分割作成
+  vim.cmd("vsplit")
+  vim.cmd("vsplit")
+  
+  -- 各ウィンドウで同じバッファを表示
+  local windows = vim.api.nvim_tabpage_list_wins(0)
+  for _, win in ipairs(windows) do
+    vim.api.nvim_win_set_buf(win, current_buf)
+  end
+  
+  -- 中央ウィンドウにフォーカス
+  vim.api.nvim_set_current_win(windows[2])
+  
+  -- 左右ペインの色を暗くする
+  vim.api.nvim_set_current_win(windows[1])
+  vim.wo.winhl = "Normal:NormalSide"
+  vim.api.nvim_set_current_win(windows[3])
+  vim.wo.winhl = "Normal:NormalSide"
+  vim.api.nvim_set_current_win(windows[2])
+  
+  -- カスタムハイライトグループを定義（背景同一，文字色のみ暗く）
+  local normal_bg = vim.fn.synIDattr(vim.fn.hlID("Normal"), "bg")
+  if normal_bg == "" then normal_bg = "NONE" end
+  vim.cmd("highlight NormalSide guibg=" .. normal_bg .. " guifg=#707070")
+  
+  -- スクロール同期のautocmd設定
+  vim.api.nvim_create_autocmd({"CursorMoved", "CursorMovedI"}, {
+    buffer = current_buf,
+    callback = function()
+      if M.split_view then
+        sync_split_scroll()
+      end
+    end
+  })
+  
+  -- 初回同期実行
+  sync_split_scroll()
+end
+
+-- Private: 通常表示復帰
+disable_split_view = function()
+  -- 分割されたウィンドウを閉じる
+  vim.cmd("only")
+  -- ハイライトをリセット
+  vim.wo.winhl = ""
+end
+
+-- Private: スクロール同期処理
+sync_split_scroll = function()
+  local windows = vim.api.nvim_tabpage_list_wins(0)
+  if #windows ~= 3 then return end
+  
+  local center_win = windows[2]
+  local left_win = windows[1]
+  local right_win = windows[3]
+  
+  -- 中央ウィンドウの表示範囲を取得
+  vim.api.nvim_set_current_win(center_win)
+  local center_top = vim.fn.line('w0')
+  local win_height = vim.api.nvim_win_get_height(center_win)
+  
+  -- 左ウィンドウ: 中央より前の範囲を表示
+  vim.api.nvim_set_current_win(left_win)
+  local left_top = math.max(1, center_top - win_height)
+  
+  
+  if left_top < center_top then
+    -- 表示すべき内容がある場合
+    local current_buf = vim.api.nvim_win_get_buf(center_win)
+    vim.api.nvim_win_set_buf(left_win, current_buf)
+    -- 左ペインの表示位置を計算
+    vim.fn.cursor(left_top, 1)
+    vim.cmd("normal! zt")
+  else
+    -- 表示すべき内容がない場合（ファイル先頭）
+    local scratch_buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_win_set_buf(left_win, scratch_buf)
+    vim.api.nvim_buf_set_option(scratch_buf, 'buftype', 'nofile')
+    vim.api.nvim_buf_set_option(scratch_buf, 'bufhidden', 'wipe')
+  end
+  
+  -- 右ウィンドウ: 中央の直後から表示
+  vim.api.nvim_set_current_win(right_win)
+  local right_top = center_top + win_height
+  vim.fn.cursor(right_top, 1)
+  vim.cmd("normal! zt")
+  
+  -- 中央ウィンドウに戻る
+  vim.api.nvim_set_current_win(center_win)
 end
 
 return M
