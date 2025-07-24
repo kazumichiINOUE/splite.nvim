@@ -229,6 +229,11 @@ enable_split_view = function()
   vim.api.nvim_create_autocmd({"CursorMoved", "CursorMovedI"}, {
     buffer = current_buf,
     callback = function()
+      -- visual mode中はスクロール同期を停止
+      if vim.fn.mode():match('[vV]') then
+        return
+      end
+      
       if M.split_view then
         sync_split_scroll()
       end
@@ -348,8 +353,23 @@ sync_split_scroll = function()
   -- 右ウィンドウ: 中央の直後から表示
   vim.api.nvim_set_current_win(right_win)
   local right_top = center_top + win_height
-  vim.fn.cursor(right_top, 1)
-  vim.cmd("normal! zt")
+  local original_buf = vim.api.nvim_win_get_buf(center_win)
+  local total_lines = vim.api.nvim_buf_line_count(original_buf)
+  
+  if right_top <= total_lines then
+    -- 表示すべき内容がある場合，元のバッファに戻してから表示
+    if vim.api.nvim_win_get_buf(right_win) ~= original_buf then
+      vim.api.nvim_win_set_buf(right_win, original_buf)
+    end
+    vim.fn.cursor(right_top, 1)
+    vim.cmd("normal! zt")
+  else
+    -- ファイル末尾を超える場合は空のスクラッチバッファを表示
+    local scratch_buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_win_set_buf(right_win, scratch_buf)
+    vim.api.nvim_buf_set_option(scratch_buf, 'buftype', 'nofile')
+    vim.api.nvim_buf_set_option(scratch_buf, 'bufhidden', 'wipe')
+  end
   
   -- 中央ウィンドウに戻る
   vim.api.nvim_set_current_win(center_win)
