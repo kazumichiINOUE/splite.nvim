@@ -41,7 +41,7 @@ use {
 ### Default Keymaps
 
 - `<leader>lt` - Toggle literate mode
-- `<leader>sp` - Toggle spread view (panoramic display)
+- `<leader>lv` - Toggle spread view (panoramic display)
 
 ### Commands
 
