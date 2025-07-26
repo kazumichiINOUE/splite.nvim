@@ -14,9 +14,9 @@ end, {
 })
 
 vim.keymap.set('n', '<leader>lv', function()
-  require('splite').toggle_split_view()
+  require('splite').toggle_spread_view()
 end, { 
-  desc = 'Toggle panoramic view',
+  desc = 'Toggle spread view',
   noremap = true,
   silent = true 
 })
@@ -30,6 +30,6 @@ vim.api.nvim_create_user_command('SpliteDebug', function()
   require('splite').debug_highlight()
 end, { desc = 'Debug highlight under cursor' })
 
-vim.api.nvim_create_user_command('SplitePano', function()
-  require('splite').toggle_split_view()
-end, { desc = 'Toggle panoramic view' })
+vim.api.nvim_create_user_command('SpliteSpread', function()
+  require('splite').toggle_spread_view()
+end, { desc = 'Toggle spread view' })

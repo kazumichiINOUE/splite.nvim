@@ -2,11 +2,11 @@
 
 *The literate programming mode by spread view*
 
-Neovim plugin for enhanced literate programming with panoramic code display and dynamic syntax highlighting modes.
+Neovim plugin for enhanced literate programming with spread view code display and dynamic syntax highlighting modes.
 
 ## Features
 
-- **Spread View**: Split-screen panoramic display for continuous code reading
+- **Spread View**: Multi-pane spread display for continuous code reading
 - **Literate Mode**: Toggle between code-focused and documentation-focused views
 - **Enhanced Comments**: Markdown-style formatting within code comments
 - **Multi-language Support**: Rust, Python, and more
@@ -41,12 +41,12 @@ use {
 ### Default Keymaps
 
 - `<leader>lt` - Toggle literate mode
-- `<leader>lv` - Toggle spread view (panoramic display)
+- `<leader>lv` - Toggle spread view
 
 ### Commands
 
 - `:SpliteToggle` - Toggle literate mode
-- `:SplitePano` - Toggle spread view mode
+- `:SpliteSpread` - Toggle spread view mode
 
 ## Configuration
 

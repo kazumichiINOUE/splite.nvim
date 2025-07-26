@@ -5,7 +5,7 @@ local M = {}
 
 -- プラグインの状態管理
 M.mode = false
-M.split_view = false
+M.spread_view = false
 
 -- 言語設定キャッシュ
 local language_configs = {}
@@ -15,9 +15,9 @@ local load_language_config
 local setup_literate_syntax
 local enable_literate_mode
 local disable_literate_mode
-local enable_split_view
-local disable_split_view
-local sync_split_scroll
+local enable_spread_view
+local disable_spread_view
+local sync_spread_scroll
 
 -- Private: 言語設定の動的読み込み
 load_language_config = function(filetype)
@@ -103,14 +103,14 @@ function M.debug_highlight()
   print("Highlight group: " .. trans_name)
 end
 
--- Public: 3分割表示切り替え
-function M.toggle_split_view()
-  M.split_view = not M.split_view
-  if M.split_view then
-    enable_split_view()
-    print("Split View Mode")
+-- Public: Spread View切り替え
+function M.toggle_spread_view()
+  M.spread_view = not M.spread_view
+  if M.spread_view then
+    enable_spread_view()
+    print("Spread View Mode")
   else
-    disable_split_view()
+    disable_spread_view()
     print("Normal View Mode")
   end
 end
@@ -194,11 +194,11 @@ disable_literate_mode = function ()
   vim.fn.winrestview(view)
 end
 
--- Private: 3分割表示有効化
-enable_split_view = function()
+-- Private: Spread View有効化
+enable_spread_view = function()
   local current_buf = vim.api.nvim_get_current_buf()
   
-  -- 3分割作成
+  -- 3ペイン作成
   vim.cmd("vsplit")
   vim.cmd("vsplit")
   
@@ -234,23 +234,23 @@ enable_split_view = function()
         return
       end
       
-      if M.split_view then
-        sync_split_scroll()
+      if M.spread_view then
+        sync_spread_scroll()
       end
     end
   })
   
   -- 初回同期実行
-  sync_split_scroll()
+  sync_spread_scroll()
 end
 
 -- Private: 通常表示復帰
-disable_split_view = function()
-  -- 行番号設定を保存（分割前の設定に戻す）
+disable_spread_view = function()
+  -- 行番号設定を保存（Spread View前の設定に戻す）
   local original_number = vim.wo.number
   local original_relativenumber = vim.wo.relativenumber
   
-  -- 分割されたウィンドウを閉じる
+  -- Spread Viewウィンドウを閉じる
   vim.cmd("only")
   
   -- 行番号設定を復元
@@ -259,7 +259,7 @@ disable_split_view = function()
 end
 
 -- Private: スクロール同期処理
-sync_split_scroll = function()
+sync_spread_scroll = function()
   local windows = vim.api.nvim_tabpage_list_wins(0)
   if #windows ~= 3 then return end
   
