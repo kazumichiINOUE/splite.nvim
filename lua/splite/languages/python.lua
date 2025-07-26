@@ -1,4 +1,4 @@
--- Python language configuration for literate_mode.nvim
+-- Python language configuration for splite.nvim
 
 return {
   syntax = "python",

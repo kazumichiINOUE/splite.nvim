@@ -1,12 +1,16 @@
-# literate_mode.nvim
+# Splite
 
-Neovim plugin for Literate Programming with dynamic syntax highlighting modes.
+*The literate programming mode by spread view*
+
+Neovim plugin for enhanced literate programming with panoramic code display and dynamic syntax highlighting modes.
 
 ## Features
 
-- Toggle between code-focused and documentation-focused display modes
-- Enhanced comment visibility for literate programming
-- Simple keymap-based mode switching
+- **Spread View**: Split-screen panoramic display for continuous code reading
+- **Literate Mode**: Toggle between code-focused and documentation-focused views
+- **Enhanced Comments**: Markdown-style formatting within code comments
+- **Multi-language Support**: Rust, Python, and more
+- **Seamless Integration**: Simple keymap-based mode switching
 
 ## Installation
 
@@ -14,9 +18,9 @@ Neovim plugin for Literate Programming with dynamic syntax highlighting modes.
 
 ```lua
 {
-  "kazumichiINOUE/literate_mode.nvim",
+  "kazumichiINOUE/splite.nvim",
   config = function()
-    require("literate_mode").setup()
+    require("splite").setup()
   end
 }
 ```
@@ -25,9 +29,9 @@ Neovim plugin for Literate Programming with dynamic syntax highlighting modes.
 
 ```lua
 use {
-  "kazumichiINOUE/literate_mode.nvim",
+  "kazumichiINOUE/splite.nvim",
   config = function()
-    require("literate_mode").setup()
+    require("splite").setup()
   end
 }
 ```
@@ -37,15 +41,17 @@ use {
 ### Default Keymaps
 
 - `<leader>lt` - Toggle literate mode
+- `<leader>sp` - Toggle spread view (panoramic display)
 
 ### Commands
 
-- `:LiterateToggle` - Toggle literate mode
+- `:SpliteToggle` - Toggle literate mode
+- `:SplitePano` - Toggle spread view mode
 
 ## Configuration
 
 ```lua
-require("literate_mode").setup({
+require("splite").setup({
   -- Configuration options will be added in future versions
 })
 ```

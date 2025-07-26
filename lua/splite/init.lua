@@ -25,7 +25,7 @@ load_language_config = function(filetype)
     return language_configs[filetype]
   end
   
-  local ok, config = pcall(require, "literate_mode.languages." .. filetype)
+  local ok, config = pcall(require, "splite.languages." .. filetype)
   if ok then
     language_configs[filetype] = config
     return config

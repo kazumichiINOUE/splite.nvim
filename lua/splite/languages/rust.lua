@@ -1,4 +1,4 @@
--- Rust language configuration for literate_mode.nvim
+-- Rust language configuration for splite.nvim
 
 return {
   syntax = "rust",
