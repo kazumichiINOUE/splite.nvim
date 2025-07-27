@@ -1,8 +1,9 @@
-# Splite
+# SPLITE
 
-*The literate programming mode by spread view*
+*SPLITE spreads your coding perspectives in Literate Programming*
 
-Neovim plugin for enhanced literate programming with spread view code display and dynamic syntax highlighting modes.
+Neovim plugin for enhanced literate programming with spread view code display 
+and dynamic syntax highlighting modes.
 
 ## Features
 
