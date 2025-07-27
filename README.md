@@ -25,6 +25,7 @@ Neovim plugin for enhanced literate programming with spread view code display an
 }
 ```
 
+<!--
 ### Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua
@@ -35,6 +36,7 @@ use {
   end
 }
 ```
+-->
 
 ## Usage
 
