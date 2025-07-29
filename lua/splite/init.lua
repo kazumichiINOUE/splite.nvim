@@ -146,17 +146,21 @@ enable_literate_mode = function ()
   local statusline_bg = vim.fn.synIDattr(vim.fn.hlID("StatusLine"), "bg")
   local statusline_fg = vim.fn.synIDattr(vim.fn.hlID("StatusLine"), "fg")
   
-  -- Tree-sitterを一時無効化
-  vim.cmd("TSDisable highlight")
-  
   -- ファイルタイプを取得してシンタックス設定
   local filetype = vim.bo.filetype
-  if not setup_literate_syntax(filetype) then
-    -- 非対応言語の場合は処理中止
+  local config = load_language_config(filetype)
+  if not config then
+    -- カーソル位置とスクロール位置を復元
     vim.fn.setpos('.', cursor_pos)
     vim.fn.winrestview(view)
     return
   end
+  
+  -- Tree-sitterを一時無効化
+  vim.cmd("TSDisable highlight")
+  
+  -- シンタックス設定を適用
+  setup_literate_syntax(filetype)
   
   -- 保存した色でステータスラインを復元
   vim.cmd(string.format("highlight StatusLine guifg=%s guibg=%s", statusline_fg, statusline_bg))
