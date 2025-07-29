@@ -212,6 +212,10 @@ enable_literate_mode = function ()
     
     -- Tree-sitterの再度の干渉を防ぐため，継続的に再適用
     local function reapply_highlights()
+      -- Literateモードが無効になっていたら処理を停止
+      if not M.mode then
+        return
+      end
       vim.cmd("TSDisable highlight")
       local current_config = load_language_config(filetype)
       if current_config and current_config.color_setup and current_config.highlight_function then
@@ -248,7 +252,14 @@ disable_literate_mode = function ()
   local cursor_pos = vim.fn.getcurpos()
   local view = vim.fn.winsaveview()
   
-  -- タイマーは M.mode = false で自動停止される
+  -- namespaceをクリア
+  local filetype = vim.bo.filetype
+  local config = load_language_config(filetype)
+  if config and config.namespace then
+    local ns = vim.api.nvim_create_namespace(config.namespace)
+    local buf = vim.api.nvim_get_current_buf()
+    vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
+  end
   
   -- 通常モード：元のカラースキームに戻す  
   vim.cmd("TSEnable highlight")
