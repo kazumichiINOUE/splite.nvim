@@ -56,16 +56,16 @@ setup_literate_syntax = function(filetype)
   end
   
   -- 動的ハイライト対応の新方式
-  local debug_file = io.open("/tmp/splite_debug.log", "a")
-  debug_file:write("Checking dynamic highlight support...\n")
-  debug_file:write("color_setup exists: " .. tostring(config.color_setup ~= nil) .. "\n")
-  debug_file:write("highlight_function exists: " .. tostring(config.highlight_function ~= nil) .. "\n")
-  debug_file:close()
+  -- local debug_file = io.open("/tmp/splite_debug.log", "a")
+  -- debug_file:write("Checking dynamic highlight support...\n")
+  -- debug_file:write("color_setup exists: " .. tostring(config.color_setup ~= nil) .. "\n")
+  -- debug_file:write("highlight_function exists: " .. tostring(config.highlight_function ~= nil) .. "\n")
+  -- debug_file:close()
   
   if config.color_setup and config.highlight_function then
-    local debug_file2 = io.open("/tmp/splite_debug.log", "a")
-    debug_file2:write("Using dynamic highlight mode\n")
-    debug_file2:close()
+    -- local debug_file2 = io.open("/tmp/splite_debug.log", "a")
+    -- debug_file2:write("Using dynamic highlight mode\n")
+    -- debug_file2:close()
     -- ハイライトグループ定義
     config.color_setup()
     
