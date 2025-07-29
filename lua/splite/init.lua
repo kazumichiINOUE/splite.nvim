@@ -56,16 +56,16 @@ setup_literate_syntax = function(filetype)
   end
   
   -- 動的ハイライト対応の新方式
-  -- local debug_file = io.open("/tmp/splite_debug.log", "a")
-  -- debug_file:write("Checking dynamic highlight support...\n")
-  -- debug_file:write("color_setup exists: " .. tostring(config.color_setup ~= nil) .. "\n")
-  -- debug_file:write("highlight_function exists: " .. tostring(config.highlight_function ~= nil) .. "\n")
-  -- debug_file:close()
+  local debug_file = io.open("/tmp/splite_debug.log", "a")
+  debug_file:write("Checking dynamic highlight support...\n")
+  debug_file:write("color_setup exists: " .. tostring(config.color_setup ~= nil) .. "\n")
+  debug_file:write("highlight_function exists: " .. tostring(config.highlight_function ~= nil) .. "\n")
+  debug_file:close()
   
   if config.color_setup and config.highlight_function then
-    -- local debug_file2 = io.open("/tmp/splite_debug.log", "a")
-    -- debug_file2:write("Using dynamic highlight mode\n")
-    -- debug_file2:close()
+    local debug_file2 = io.open("/tmp/splite_debug.log", "a")
+    debug_file2:write("Using dynamic highlight mode\n")
+    debug_file2:close()
     -- ハイライトグループ定義
     config.color_setup()
     
@@ -205,15 +205,41 @@ enable_literate_mode = function ()
   -- Tree-sitterを一時無効化
   vim.cmd("TSDisable highlight")
   
-  -- シンタックス設定を適用
-  setup_literate_syntax(filetype)
-  
-  -- 保存した色でステータスラインを復元
-  vim.cmd(string.format("highlight StatusLine guifg=%s guibg=%s", statusline_fg, statusline_bg))
-  
-  -- カーソル位置とスクロール位置を復元
-  vim.fn.setpos('.', cursor_pos)
-  vim.fn.winrestview(view)
+  -- Tree-sitterが完全に無効化されるまで少し待ってからシンタックス設定を適用
+  vim.defer_fn(function()
+    vim.cmd("TSDisable highlight")  -- 再度無効化を確実にする
+    setup_literate_syntax(filetype)
+    
+    -- Tree-sitterの再度の干渉を防ぐため，継続的に再適用
+    local function reapply_highlights()
+      vim.cmd("TSDisable highlight")
+      local current_config = load_language_config(filetype)
+      if current_config and current_config.color_setup and current_config.highlight_function then
+        current_config.color_setup()
+        local ns = vim.api.nvim_create_namespace(current_config.namespace)
+        local buf = vim.api.nvim_get_current_buf()
+        local line_count = vim.api.nvim_buf_line_count(buf)
+        current_config.highlight_function(buf, ns, 0, line_count - 1)
+      end
+    end
+    
+    -- 複数回の遅延実行で確実に適用
+    vim.defer_fn(reapply_highlights, 500)
+    vim.defer_fn(reapply_highlights, 1000)
+    vim.defer_fn(reapply_highlights, 2000)
+    vim.defer_fn(reapply_highlights, 3000)
+    vim.defer_fn(reapply_highlights, 4000)
+    vim.defer_fn(reapply_highlights, 5000)
+    vim.defer_fn(reapply_highlights, 7000)
+    vim.defer_fn(reapply_highlights, 10000)
+    
+    -- 保存した色でステータスラインを復元
+    vim.cmd(string.format("highlight StatusLine guifg=%s guibg=%s", statusline_fg, statusline_bg))
+    
+    -- カーソル位置とスクロール位置を復元
+    vim.fn.setpos('.', cursor_pos)
+    vim.fn.winrestview(view)
+  end, 200)
 end
 
 -- Private: 通常モード復元
@@ -222,6 +248,7 @@ disable_literate_mode = function ()
   local cursor_pos = vim.fn.getcurpos()
   local view = vim.fn.winsaveview()
   
+  -- タイマーは M.mode = false で自動停止される
   
   -- 通常モード：元のカラースキームに戻す  
   vim.cmd("TSEnable highlight")
@@ -292,6 +319,25 @@ enable_spread_view = function()
   
   -- 初回同期実行
   sync_spread_scroll()
+  
+  -- Spread View中の:q を :qa の動作にするautocmd設定
+  vim.api.nvim_create_autocmd('CmdlineEnter', {
+    buffer = current_buf,
+    callback = function()
+      vim.keymap.set('c', '<CR>', function()
+        local cmdline = vim.fn.getcmdline()
+        if M.spread_view and cmdline == 'q' then
+          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<C-c>', true, false, true), 'n', false)
+          vim.defer_fn(function()
+            vim.cmd('qa')
+          end, 10)
+          return ''
+        else
+          return '<CR>'
+        end
+      end, { expr = true, buffer = current_buf })
+    end
+  })
 end
 
 -- Private: 通常表示復帰
@@ -299,6 +345,9 @@ disable_spread_view = function()
   -- 行番号設定を保存（Spread View前の設定に戻す）
   local original_number = vim.wo.number
   local original_relativenumber = vim.wo.relativenumber
+  
+  -- Spread View中の:q 関連のキーマップとautocmdを削除
+  pcall(vim.keymap.del, 'c', '<CR>', { buffer = vim.api.nvim_get_current_buf() })
   
   -- Spread Viewウィンドウを閉じる
   vim.cmd("only")

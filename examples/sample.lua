@@ -29,6 +29,8 @@ More text with `another code` example.
 -- normal comment 
 
 a = 10
+print("Hello, world")
+print(string.format("a = %d", a))
 
 --[[
 normal comment
