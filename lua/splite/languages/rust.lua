@@ -5,7 +5,10 @@ return {
   background = "#011628",
   normal_fg = "#44475a",
   comment_fg = "#CBE0F0",
-  comment_region = 'syntax region rustComment start="/\\*lt" end="\\*/" contains=CommentHeader1,CommentHeader2,CommentHeader3,CommentHeader4,CommentBold,CommentItalic,CommentCodeInline,CommentCodeRust,CommentCodeAlgorithm,CommentCodeBlock,CommentList,CommentListWithCode',
+  comment_region = 'syntax region rustComment start="/\\*lt" end="\\*/" ' ..
+                   'contains=CommentHeader1,CommentHeader2,CommentHeader3,CommentHeader4,' ..
+                   'CommentBold,CommentItalic,CommentCodeInline,CommentCodeRust,' ..
+                   'CommentCodeAlgorithm,CommentCodeBlock,CommentList,CommentListWithCode',
   normal_comment = 'syntax region rustNormalComment start="/\\*\\(\\(lt\\)\\@!\\)" end="\\*/"',
   line_comment = 'syntax match rustLineComment "//.*$"',
   delimiter = 'syntax match CommentDelimiter "/\\*lt" contained | syntax match CommentDelimiter "\\*/" contained',

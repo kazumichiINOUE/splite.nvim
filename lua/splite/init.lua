@@ -50,22 +50,62 @@ setup_literate_syntax = function(filetype)
   vim.cmd("highlight Normal guifg=" .. config.normal_fg .. " guibg=" .. config.background)
   vim.cmd("highlight Comment guifg=" .. config.comment_fg .. " guibg=" .. config.background .. " gui=bold")
   
-  -- シンタックスパターンの設定
-  for category, patterns in pairs(config.syntax_patterns) do
-    for _, pattern in ipairs(patterns) do
-      vim.cmd(pattern)
-    end
+  -- 標準構文のクリア（カスタム定義より先に実行）
+  if config.clear_standard then
+    pcall(vim.cmd, config.clear_standard)
   end
   
-  -- コメント領域とdelimiterの設定
-  vim.cmd(config.comment_region)
-  vim.cmd(config.normal_comment)
-  vim.cmd(config.line_comment)
-  vim.cmd(config.delimiter)
+  -- 動的ハイライト対応の新方式
+  local debug_file = io.open("/tmp/splite_debug.log", "a")
+  debug_file:write("Checking dynamic highlight support...\n")
+  debug_file:write("color_setup exists: " .. tostring(config.color_setup ~= nil) .. "\n")
+  debug_file:write("highlight_function exists: " .. tostring(config.highlight_function ~= nil) .. "\n")
+  debug_file:close()
+  
+  if config.color_setup and config.highlight_function then
+    local debug_file2 = io.open("/tmp/splite_debug.log", "a")
+    debug_file2:write("Using dynamic highlight mode\n")
+    debug_file2:close()
+    -- ハイライトグループ定義
+    config.color_setup()
+    
+    -- namespace作成
+    local ns = vim.api.nvim_create_namespace(config.namespace)
+    local buf = vim.api.nvim_get_current_buf()
+    
+    -- 初回ハイライト適用
+    local line_count = vim.api.nvim_buf_line_count(buf)
+    config.highlight_function(buf, ns, 0, line_count - 1)
+    
+    -- バッファ変更時の動的更新
+    vim.api.nvim_buf_attach(buf, false, {
+      on_lines = function(_, _, _, first, _, last_new)
+        config.highlight_function(buf, ns, first, last_new)
+      end
+    })
+  else
+    -- 従来方式（rustなど）
+    -- シンタックスパターンの設定
+    if config.syntax_patterns then
+      for category, patterns in pairs(config.syntax_patterns) do
+        for _, pattern in ipairs(patterns) do
+          vim.cmd(pattern)
+        end
+      end
+    end
+    
+    -- コメント領域とdelimiterの設定
+    vim.cmd(config.comment_region)
+    if config.normal_comment then vim.cmd(config.normal_comment) end
+    if config.line_comment then vim.cmd(config.line_comment) end
+    vim.cmd(config.delimiter)
+  end
   
   -- ハイライトグループの設定
-  for _, highlight in ipairs(config.highlight_groups) do
-    vim.cmd(highlight)
+  if config.highlight_groups then
+    for _, highlight in ipairs(config.highlight_groups) do
+      vim.cmd(highlight)
+    end
   end
   
   return true
@@ -98,9 +138,15 @@ function M.debug_highlight()
   local trans_id = vim.fn.synIDtrans(syn_id)
   local trans_name = vim.fn.synIDattr(trans_id, 'name')
   
+  -- 実際の色情報も表示
+  local fg = vim.fn.synIDattr(trans_id, 'fg')
+  local bg = vim.fn.synIDattr(trans_id, 'bg')
+  local gui = vim.fn.synIDattr(trans_id, 'gui')
+  
   print("Cursor position: " .. line .. "," .. col)
   print("Syntax group: " .. syn_name)  
   print("Highlight group: " .. trans_name)
+  print("Colors - fg: " .. (fg or "none") .. ", bg: " .. (bg or "none") .. ", gui: " .. (gui or "none"))
 end
 
 -- Public: Spread View切り替え
