@@ -10,7 +10,7 @@ and dynamic syntax highlighting modes.
 - **Spread View**: Multi-pane spread display for continuous code reading
 - **Literate Mode**: Toggle between code-focused and documentation-focused views
 - **Enhanced Comments**: Markdown-style formatting within code comments
-- **Multi-language Support**: Rust, Python, and more
+- **Multi-language Support**: Dynamic syntax highlighting for multiple languages
 - **Seamless Integration**: Simple keymap-based mode switching
 
 ## Installation
@@ -50,6 +50,15 @@ use {
 
 - `:SpliteToggle` - Toggle literate mode
 - `:SpliteSpread` - Toggle spread view mode
+
+## Supported Languages in Literate Mode
+
+| Language | Status | Features |
+|----------|--------|----------|
+| Rust     | ✅     | Full Markdown support, Headers, Bold/Italic, Code blocks, Lists |
+| Python   | ✅     | Full Markdown support, Headers, Bold/Italic, Code blocks, Lists |
+| Lua      | ✅     | Full Markdown support, Headers, Bold/Italic, Code blocks, Lists |
+| C/C++    | 🚧     | Planned |
 
 ## Configuration
 
