@@ -9,7 +9,7 @@ return {
   normal_comment = 'syntax region pythonNormalDocstring start=\'"""\\(\\(lt\\)\\@!\\)\' end=\'"""\'',
   line_comment = 'syntax match pythonLineComment "#.*$"',
   delimiter = 'syntax match CommentDelimiter \'"""lt\' contained | syntax match CommentDelimiter \'"""\' contained',
-  
+
   syntax_patterns = {
     header = {
       'syntax match CommentHeader1 /^\\s*#[^#].*$/ contained',
@@ -35,7 +35,7 @@ return {
       'syntax match AlgoOperator /\\(<-\\|!=\\|≠\\|←\\)/ contained'
     }
   },
-  
+
   highlight_groups = {
     'highlight! link pythonDocstring Comment',
     'highlight pythonNormalDocstring guifg=#44475a gui=italic',

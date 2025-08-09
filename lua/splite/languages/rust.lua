@@ -12,7 +12,7 @@ return {
   normal_comment = 'syntax region rustNormalComment start="/\\*\\(\\(lt\\)\\@!\\)" end="\\*/"',
   line_comment = 'syntax match rustLineComment "//.*$"',
   delimiter = 'syntax match CommentDelimiter "/\\*lt" contained | syntax match CommentDelimiter "\\*/" contained',
-  
+
   syntax_patterns = {
     header = {
       'syntax match CommentHeader1 /^\\s*\\(\\*\\s*\\)\\?#[^#].*$/ contained',
@@ -41,14 +41,14 @@ return {
       'syntax match AlgoOperator /\\(<-\\|!=\\|≠\\|←\\)/ contained'
     }
   },
-  
+
   highlight_groups = {
     'highlight! link rustComment Comment',
     'highlight rustNormalComment guifg=#44475a gui=italic',
     'highlight rustLineComment guifg=#44475a gui=italic',
     'highlight! CommentDelimiter guifg=#44475a gui=italic',
     'highlight CommentHeader1 guifg=#ff79c6 guibg=#011628 gui=bold,underline',
-    'highlight CommentHeader2 guifg=#f7768e guibg=#011628 gui=bold', 
+    'highlight CommentHeader2 guifg=#f7768e guibg=#011628 gui=bold',
     'highlight CommentHeader3 guifg=#e0af68 guibg=#011628 gui=bold',
     'highlight CommentHeader4 guifg=#9ece6a guibg=#011628',
     'highlight CommentBold guifg=#ff9500 guibg=#011628 gui=bold',
